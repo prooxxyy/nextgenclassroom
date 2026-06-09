@@ -418,10 +418,43 @@ function processQRData(text) {
         }
     }
 
-    if (!targetRow) {
-        Swal.fire('Not Found', 'Student not found in table.', 'error');
-        return;
+   if (!targetRow) {
+
+    for (let row of tbody.querySelectorAll('tr')) {
+
+        const cells = row.querySelectorAll('td:not(.num-col)');
+
+        if (cells[0].innerText.trim() === '') {
+
+            cells[0].innerText = name;
+            cells[1].innerText = grade || '';
+            cells[2].innerText = school || '';
+            cells[3].innerText = preTest || '';
+
+            const now = new Date();
+            cells[6].innerText = now.toLocaleDateString();
+            cells[7].innerText = now.toLocaleTimeString();
+
+            saveAttendance();
+
+            Swal.fire(
+                'Success',
+                `${name} added successfully.`,
+                'success'
+            );
+
+            return;
+        }
     }
+
+    Swal.fire(
+        'Table Full',
+        'No empty rows available.',
+        'warning'
+    );
+
+    return;
+}
 
     const cells = targetRow.querySelectorAll('td:not(.num-col)');
     const now = new Date();
