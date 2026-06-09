@@ -354,16 +354,18 @@ function stopQRInput() {
     }
 }
 
-    function qrCodeSuccessCallback(decodedText, decodedResult) {
-        // Stop scanner first, then process data and show preview
-        try {
-            stopQRInput();
-            processQRData(decodedText);
-        } catch (e) {
-            console.error('QR processing error', e);
-            Swal.fire('Scan Error', 'Could not process QR data.', 'error');
-        }
+ function qrCodeSuccessCallback(decodedText, decodedResult) {
+    console.log("QR CONTENT:", decodedText);
+    alert(decodedText);
+
+    try {
+        stopQRInput();
+        processQRData(decodedText);
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Scan Error', e.message, 'error');
     }
+}
 
     function processQRData(text) {
         let obj = {};
