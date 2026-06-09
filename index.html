@@ -368,6 +368,7 @@ function stopQRInput() {
 }
 
     function processQRData(text) {
+        console.log(obj);
         let obj = {};
         // Try JSON first (handle object, nested object, or array)
         try {
@@ -407,7 +408,9 @@ function stopQRInput() {
         const name = obj.name || obj.fullname || obj['full name'] || obj.studentname || obj.student || obj.learner || (obj.firstname && obj.lastname ? (obj.firstname + ' ' + obj.lastname) : '') || obj.n || '';
         const grade = obj.grade || obj.level || obj.g || '';
         const school = obj.school || obj.institution || obj.s || '';
-        const preTest =obj.pretest ||obj['pre-test'] ||obj['pre test'] ||obj.pretestscore ||obj.score ||obj.pre ||obj.p ||'';
+        const preTest =obj.pretest ||obj['pre-test'] ||obj['pre test'] ||'';
+        const postTest = obj.posttest || obj['post-test'] || obj['post test'] || '';
+        const feedback =obj.feedback ||'';
 
         if (!name) {
             Swal.fire('Invalid QR', 'QR did not contain a student name.', 'warning');
@@ -431,17 +434,26 @@ for (let row of rows) {
     }
 }
 
-if (type === 'POST' && targetRow) {
+if (targetRow) {
+
     const cells = targetRow.querySelectorAll('td:not(.num-col)');
 
-    cells[4].innerText = preTest;
+    if (postTest) {
+        cells[4].innerText = postTest;
+    }
 
-    if (obj.feedback) {
-        cells[5].innerText = obj.feedback;
+    if (feedback) {
+        cells[5].innerText = feedback;
     }
 
     saveAttendance();
-    Swal.fire('Success', 'Post-Test updated!', 'success');
+
+    Swal.fire(
+        'Success',
+        `${name}'s Post-Test and Feedback updated.`,
+        'success'
+    );
+
     return;
 }
 
