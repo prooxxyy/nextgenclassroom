@@ -368,8 +368,8 @@ function stopQRInput() {
 }
 
     function processQRData(text) {
-        console.log(obj);
         let obj = {};
+        console.log(obj);
         // Try JSON first (handle object, nested object, or array)
         try {
             const parsed = JSON.parse(text);
@@ -411,6 +411,7 @@ function stopQRInput() {
         const preTest =obj.pretest ||obj['pre-test'] ||obj['pre test'] ||'';
         const postTest = obj.posttest || obj['post-test'] || obj['post test'] || '';
         const feedback =obj.feedback ||'';
+        console.log("Parsed QR:", obj);
 
         if (!name) {
             Swal.fire('Invalid QR', 'QR did not contain a student name.', 'warning');
@@ -427,7 +428,7 @@ for (let row of rows) {
 
     if (
         cells[0].innerText.trim().toLowerCase() ===
-        name.toLowerCase()
+        name.trim().toLowerCase()
     ) {
         targetRow = row;
         break;
@@ -438,13 +439,8 @@ if (targetRow) {
 
     const cells = targetRow.querySelectorAll('td:not(.num-col)');
 
-    if (postTest) {
-        cells[4].innerText = postTest;
-    }
-
-    if (feedback) {
-        cells[5].innerText = feedback;
-    }
+    cells[4].innerText = postTest || '';
+    cells[5].innerText = feedback || '';
 
     saveAttendance();
 
