@@ -461,7 +461,14 @@ if (targetRow) {
 }
 
         // Build parsed object for preview/insert
-        const parsed = { name: String(name).trim(), grade: String(grade).trim(), school: String(school).trim(), preTest: String(preTest).trim() };
+       const parsed = {
+    name: String(name).trim(),
+    grade: String(grade).trim(),
+    school: String(school).trim(),
+    preTest: String(preTest).trim(),
+    postTest: String(postTest).trim(),
+    feedback: String(feedback).trim()
+};
 
         // Show preview before inserting
         showPreview(parsed);
@@ -478,11 +485,13 @@ if (targetRow) {
         lastParsedQR = obj;
         const container = document.getElementById('qr-preview-content');
         container.innerHTML = `
-            <div><strong>Name:</strong> ${escapeHtml(obj.name)}</div>
-            <div><strong>Grade:</strong> ${escapeHtml(obj.grade)}</div>
-            <div><strong>School:</strong> ${escapeHtml(obj.school)}</div>
-            <div><strong>Pre-Test:</strong> ${escapeHtml(obj.preTest)}</div>
-        `;
+    <div><strong>Name:</strong> ${escapeHtml(obj.name)}</div>
+    <div><strong>Grade:</strong> ${escapeHtml(obj.grade)}</div>
+    <div><strong>School:</strong> ${escapeHtml(obj.school)}</div>
+    <div><strong>Pre-Test:</strong> ${escapeHtml(obj.preTest)}</div>
+    <div><strong>Post-Test:</strong> ${escapeHtml(obj.postTest)}</div>
+    <div><strong>Feedback:</strong> ${escapeHtml(obj.feedback)}</div>
+`;
         document.getElementById('qr-preview').style.display = 'flex';
     }
 
@@ -515,6 +524,8 @@ if (targetRow) {
             cells[1].innerText = parsed.grade;
             cells[2].innerText = parsed.school;
             cells[3].innerText = parsed.preTest;
+            cells[4].innerText = parsed.postTest;
+            cells[5].innerText = parsed.feedback;
 
             const now = new Date();
 
@@ -524,7 +535,7 @@ if (targetRow) {
             saveAttendance();
 
             Swal.fire(
-                'Added',
+                'Success',
                 `${parsed.name} added successfully.`,
                 'success'
             );
@@ -536,7 +547,7 @@ if (targetRow) {
     Swal.fire(
         'Table Full',
         'No empty rows available.',
-        'info'
+        'warning'
     );
 }
 </script>
