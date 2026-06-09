@@ -355,7 +355,10 @@ function stopQRInput() {
 }
 
 function qrCodeSuccessCallback(decodedText) {
-    console.log("QR CONTENT:", decodedText);
+   console.log("RAW QR CONTENT:");
+console.log(decodedText);
+
+alert(decodedText);
 
     try {
         stopQRInput();
@@ -418,7 +421,6 @@ function qrCodeSuccessCallback(decodedText) {
         const preTest =obj.pretest ||obj['pre-test'] ||obj['pre test'] ||'';
         const postTest = obj.posttest || obj['post-test'] || obj['post test'] || '';
         const feedback =obj.feedback ||'';
-        console.log("Parsed QR:", obj);
 
         if (!name) {
             Swal.fire('Invalid QR', 'QR did not contain a student name.', 'warning');
