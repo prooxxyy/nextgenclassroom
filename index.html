@@ -354,127 +354,108 @@ function stopQRInput() {
     }
 }
 
-function qrCodeSuccessCallback(decodedText) {
-   console.log("RAW QR CONTENT:");
-console.log(decodedText);
+    function qrCodeSuccessCallback(decodedText, decodedResult) {
+        // Stop scanner first, then process data and show preview
+        try {
+            stopQRInput();
+            processQRData(decodedText);
+        } catch (e) {
+            console.error('QR processing error', e);
+            Swal.fire('Scan Error', 'Could not process QR data.', 'error');
+        }
+    }
 
-alert(decodedText);
+function processQRData(text) {
+    let obj = {};
 
     try {
-        stopQRInput();
+        const parsed = JSON.parse(text);
 
-        processQRData(decodedText);
+        obj = Array.isArray(parsed)
+            ? {
+                name: parsed[0] || '',
+                grade: parsed[1] || '',
+                school: parsed[2] || '',
+                preTest: parsed[3] || '',
+                postTest: parsed[4] || '',
+                feedback: parsed[5] || ''
+            }
+            : parsed;
 
     } catch (e) {
+        const parts = text.split(/[;\n]/).map(s => s.trim()).filter(Boolean);
 
-        console.error("FULL ERROR:", e);
-
-        Swal.fire({
-            icon: 'error',
-            title: 'Scan Error',
-            text: e.message
+        parts.forEach(part => {
+            const kv = part.split(/:|=/).map(s => s.trim());
+            if (kv.length >= 2) {
+                obj[kv[0].toLowerCase()] = kv.slice(1).join(':');
+            }
         });
     }
-}
 
-    function processQRData(text) {
-        let obj = {};
-        console.log(obj);
-        // Try JSON first (handle object, nested object, or array)
-        try {
-            const parsed = JSON.parse(text);
-            if (Array.isArray(parsed)) {
-                // Assume [name, grade, school, preTest] if array
-                obj = {
-                    name: parsed[0] || '',
-                    grade: parsed[1] || '',
-                    school: parsed[2] || '',
-                    pretest: parsed[3] || ''
-                };
-            } else if (typeof parsed === 'object' && parsed !== null) {
-                // If nested under a key like {student:{...}}
-                const candidate = parsed.student || parsed.data || parsed;
-                obj = {};
-                for (const k in candidate) {
-                    if (Object.prototype.hasOwnProperty.call(candidate, k)) {
-                        obj[k.toLowerCase()] = candidate[k];
-                    }
-                }
-            }
-        } catch (e) {
-            // fallback: parse `Key:Value;Key2:Value2` or `key,value` patterns
-            const parts = text.split(/[;|\n]/).map(s => s.trim()).filter(Boolean);
-            parts.forEach(part => {
-                const kv = part.split(/:|=|,/).map(s => s.trim());
-                if (kv.length >= 2) {
-                    const key = kv[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const val = kv.slice(1).join(':').trim();
-                    obj[key] = val;
-                }
-            });
-        }
+    const name = obj.name || obj.fullname || obj['full name'];
+    const grade = obj.grade;
+    const school = obj.school;
+    const preTest = obj.pretest || obj.preTest;
+    const postTest = obj.posttest || obj.postTest;
+    const feedback = obj.feedback;
 
-        // Normalize and extract keys (handle firstname+lastname)
-        const name = obj.name || obj.fullname || obj['full name'] || obj.studentname || obj.student || obj.learner || (obj.firstname && obj.lastname ? (obj.firstname + ' ' + obj.lastname) : '') || obj.n || '';
-        const grade = obj.grade || obj.level || obj.g || '';
-        const school = obj.school || obj.institution || obj.s || '';
-        const preTest =obj.pretest ||obj['pre-test'] ||obj['pre test'] ||'';
-        const postTest = obj.posttest || obj['post-test'] || obj['post test'] || '';
-        const feedback =obj.feedback ||'';
-
-        if (!name) {
-            Swal.fire('Invalid QR', 'QR did not contain a student name.', 'warning');
-            return;
-        }
-
-        // Find first empty row
-        const rows = tbody.querySelectorAll('tr');
-        let placed = false;
-       let targetRow = null;
-
-for (let row of rows) {
-    const cells = row.querySelectorAll('td:not(.num-col)');
-
-    if (
-        cells[0].innerText.trim().toLowerCase() ===
-        name.trim().toLowerCase()
-    ) {
-        targetRow = row;
-        break;
+    if (!name) {
+        Swal.fire('Invalid QR', 'No name found in QR.', 'warning');
+        return;
     }
-}
 
-if (targetRow) {
+    // 🔥 FIND ROW
+    let targetRow = null;
+
+    for (let row of tbody.querySelectorAll('tr')) {
+        const cells = row.querySelectorAll('td:not(.num-col)');
+        const rowName = cells[0].innerText.trim().toLowerCase();
+
+        if (rowName === name.trim().toLowerCase()) {
+            targetRow = row;
+            break;
+        }
+    }
+
+    if (!targetRow) {
+        Swal.fire('Not Found', 'Student not found in table.', 'error');
+        return;
+    }
 
     const cells = targetRow.querySelectorAll('td:not(.num-col)');
+    const now = new Date();
 
-    cells[4].innerText = postTest || '';
-    cells[5].innerText = feedback || '';
+    // ✅ PRE TEST (if exists)
+    if (preTest) {
+        cells[3].innerText = preTest;
+    }
+
+    // ✅ POST TEST (FIXED)
+    if (postTest) {
+        cells[4].innerText = postTest;
+    }
+
+    // ✅ FEEDBACK (FIXED)
+    if (feedback) {
+        cells[5].innerText = feedback;
+    }
+
+    // Date + Time (only once)
+    cells[6].innerText = now.toLocaleDateString();
+    cells[7].innerText = now.toLocaleTimeString();
+
+    // Lock row
+    for (let i = 0; i < 6; i++) {
+        if (cells[i].innerText.trim() !== '') {
+            cells[i].contentEditable = "false";
+        }
+    }
 
     saveAttendance();
 
-    Swal.fire(
-        'Success',
-        `${name}'s Post-Test and Feedback updated.`,
-        'success'
-    );
-
-    return;
+    Swal.fire('Success', 'Data updated successfully!', 'success');
 }
-
-        // Build parsed object for preview/insert
-       const parsed = {
-    name: String(name).trim(),
-    grade: String(grade).trim(),
-    school: String(school).trim(),
-    preTest: String(preTest).trim(),
-    postTest: String(postTest).trim(),
-    feedback: String(feedback).trim()
-};
-
-        // Show preview before inserting
-        showPreview(parsed);
-    }
 
     // Detect mobile devices for native camera trigger
     function isMobileDevice() {
@@ -487,13 +468,11 @@ if (targetRow) {
         lastParsedQR = obj;
         const container = document.getElementById('qr-preview-content');
         container.innerHTML = `
-    <div><strong>Name:</strong> ${escapeHtml(obj.name)}</div>
-    <div><strong>Grade:</strong> ${escapeHtml(obj.grade)}</div>
-    <div><strong>School:</strong> ${escapeHtml(obj.school)}</div>
-    <div><strong>Pre-Test:</strong> ${escapeHtml(obj.preTest)}</div>
-    <div><strong>Post-Test:</strong> ${escapeHtml(obj.postTest)}</div>
-    <div><strong>Feedback:</strong> ${escapeHtml(obj.feedback)}</div>
-`;
+            <div><strong>Name:</strong> ${escapeHtml(obj.name)}</div>
+            <div><strong>Grade:</strong> ${escapeHtml(obj.grade)}</div>
+            <div><strong>School:</strong> ${escapeHtml(obj.school)}</div>
+            <div><strong>Pre-Test:</strong> ${escapeHtml(obj.preTest)}</div>
+        `;
         document.getElementById('qr-preview').style.display = 'flex';
     }
 
@@ -512,46 +491,13 @@ if (targetRow) {
         return String(s || '').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
     }
 
-   function insertParsed(parsed) {
-
-    const rows = tbody.querySelectorAll('tr');
-
-    for (let row of rows) {
-
-        const cells = row.querySelectorAll('td:not(.num-col)');
-
-        if (cells[0].innerText.trim() === '') {
-
-            cells[0].innerText = parsed.name;
-            cells[1].innerText = parsed.grade;
-            cells[2].innerText = parsed.school;
-            cells[3].innerText = parsed.preTest;
-            cells[4].innerText = parsed.postTest;
-            cells[5].innerText = parsed.feedback;
-
-            const now = new Date();
-
-            cells[6].innerText = now.toLocaleDateString();
-            cells[7].innerText = now.toLocaleTimeString();
-
-            saveAttendance();
-
-            Swal.fire(
-                'Success',
-                `${parsed.name} added successfully.`,
-                'success'
-            );
-
-            return;
+    function insertParsed(parsed) {
+        if (placed) {
+            Swal.fire('Added', `Added ${parsed.name} to the table.`, 'success');
+        } else {
+            Swal.fire('Table Full', 'No empty rows available to place scanned data.', 'info');
         }
     }
-
-    Swal.fire(
-        'Table Full',
-        'No empty rows available.',
-        'warning'
-    );
-}
 </script>
 
 </body>
