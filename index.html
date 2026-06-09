@@ -415,23 +415,33 @@ function stopQRInput() {
         // Find first empty row
         const rows = tbody.querySelectorAll('tr');
         let placed = false;
-        for (let row of rows) {
-            const cells = row.querySelectorAll('td:not(.num-col)');
-            if (cells[0].innerText.trim() === '') {
-                cells[0].innerText = name;
-                if (grade) cells[1].innerText = grade;
-                if (school) cells[2].innerText = school;
-                if (preTest) cells[3].innerText = preTest;
-                const now = new Date();
-                cells[6].innerText = now.toLocaleDateString();
-                cells[7].innerText = now.toLocaleTimeString();
-                // Lock filled fields
-                [0,1,2,3].forEach(i => { if (cells[i].innerText.trim() !== '') cells[i].contentEditable = 'false'; });
-                saveAttendance();
-                placed = true;
-                break;
-            }
-        }
+       let targetRow = null;
+
+for (let row of rows) {
+    const cells = row.querySelectorAll('td:not(.num-col)');
+
+    if (
+        cells[0].innerText.trim().toLowerCase() ===
+        name.toLowerCase()
+    ) {
+        targetRow = row;
+        break;
+    }
+}
+
+if (type === 'POST' && targetRow) {
+    const cells = targetRow.querySelectorAll('td:not(.num-col)');
+
+    cells[4].innerText = preTest;
+
+    if (obj.feedback) {
+        cells[5].innerText = obj.feedback;
+    }
+
+    saveAttendance();
+    Swal.fire('Success', 'Post-Test updated!', 'success');
+    return;
+}
 
         // Build parsed object for preview/insert
         const parsed = { name: String(name).trim(), grade: String(grade).trim(), school: String(school).trim(), preTest: String(preTest).trim() };
