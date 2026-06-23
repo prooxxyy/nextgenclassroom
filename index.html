@@ -52,7 +52,7 @@
         <table class="table table-bordered">
             <thead class="table-light">
                 <tr>
-                    <th class="num-col">#</th>
+                   <th class="num-col">PC Number</th>
                     <th>Full Name</th>
                     <th>Grade</th>
                     <th>School</th>
@@ -240,7 +240,7 @@
     for (let i = 1; i <= 30; i++) {
         let row = document.createElement('tr');
         row.innerHTML = `
-            <td class="num-col">${i}</td>
+            <td class="num-col"></td>
             <td contenteditable="true" onblur="lockCell(this)"></td>
             <td contenteditable="true" onblur="lockCell(this)"></td>
             <td contenteditable="true" onblur="lockCell(this)"></td>
@@ -401,15 +401,14 @@ function processQRData(text) {
     }
 
     const parsed = {
-
-        name: obj.name || "",
-        grade: obj.grade || "",
-        school: obj.school || "",
-        preTest: obj.pretest || "",
-        postTest: obj.posttest || "",
-        feedback: obj.feedback || ""
-
-    };
+    pcnumber: obj.pcnumber || "",
+    name: obj.fullname || obj.name || "",
+    grade: obj.grade || "",
+    school: obj.school || "",
+    preTest: obj.pretest || "",
+    postTest: obj.posttest || "",
+    feedback: obj.feedback || ""
+};
 
     if (!parsed.name) {
 
@@ -468,6 +467,8 @@ function showPreview(data) {
 
     // Check if student already exists
     for (let row of rows) {
+    
+    row.querySelector(".num-col").innerText = parsed.pcnumber;
 
         const cells = row.querySelectorAll("td:not(.num-col)");
 
