@@ -127,7 +127,8 @@
             const feedback = cells[5].innerText.trim();
             const date = cells[6].innerText.trim();
             const time = cells[7].innerText.trim();
-            data.push({name, grade, school, preTest, postTest, feedback, date, time});
+            const pcnumber = row.querySelector(".num-col").innerText.trim();
+            data.push({pcnumber, name, grade, school, preTest, postTest, feedback, date, time});
         });
         localStorage.setItem('attendanceData', JSON.stringify(data));
     }
@@ -138,6 +139,8 @@
         rows.forEach((row, index) => {
             if (data[index]) {
                 const cells = row.querySelectorAll('td:not(.num-col)');
+                row.querySelector(".num-col").innerText =
+                data[index].pcnumber || "";
                 cells[0].innerText = data[index].name || '';
                 cells[1].innerText = data[index].grade || '';
                 cells[2].innerText = data[index].school || '';
@@ -466,38 +469,69 @@ function showPreview(data) {
     const rows = tbody.querySelectorAll("tr");
 
     // Check if student already exists
-for (let row of rows) {
+    for (let row of rows) {
 
-    const cells = row.querySelectorAll("td:not(.num-col)");
+        const cells = row.querySelectorAll("td:not(.num-col)");
 
-    if (cells[0].innerText.trim() === "") {
+        if (
+            cells[0].innerText.trim().toLowerCase() ===
+            parsed.name.toLowerCase()
+        ) {
 
-        row.querySelector(".num-col").innerText = parsed.pcnumber;
+            cells[4].innerText = parsed.postTest;
+            cells[5].innerText = parsed.feedback;
 
-        cells[0].innerText = parsed.name;
-        cells[1].innerText = parsed.grade;
-        cells[2].innerText = parsed.school;
-        cells[3].innerText = parsed.preTest;
-        cells[4].innerText = parsed.postTest;
-        cells[5].innerText = parsed.feedback;
+            saveAttendance();
 
-        const now = new Date();
+            Swal.fire(
+                "Updated",
+                `${parsed.name}'s record has been updated.`,
+                "success"
+            );
 
-        cells[6].innerText = now.toLocaleDateString();
-        cells[7].innerText = now.toLocaleTimeString();
-
-        saveAttendance();
-
-        Swal.fire(
-            "Success",
-            `${parsed.name} inserted successfully.`,
-            "success"
-        );
-
-        return;
+            return;
+        }
     }
+
+    // Insert new student
+    for (let row of rows) {
+
+        const cells = row.querySelectorAll("td:not(.num-col)");
+
+        if (cells[0].innerText.trim() === "") {
+
+            row.querySelector(".num-col").innerText = parsed.pcnumber;
+
+            cells[0].innerText = parsed.name;
+            cells[1].innerText = parsed.grade;
+            cells[2].innerText = parsed.school;
+            cells[3].innerText = parsed.preTest;
+            cells[4].innerText = parsed.postTest;
+            cells[5].innerText = parsed.feedback;
+
+            const now = new Date();
+
+            cells[6].innerText = now.toLocaleDateString();
+            cells[7].innerText = now.toLocaleTimeString();
+
+            saveAttendance();
+
+            Swal.fire(
+                "Success",
+                `${parsed.name} inserted successfully.`,
+                "success"
+            );
+
+            return;
+        }
+    }
+
+    Swal.fire(
+        "Table Full",
+        "No empty row available.",
+        "warning"
+    );
 }
-  }
 
 </script>
 
