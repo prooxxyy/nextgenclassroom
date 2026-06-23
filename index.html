@@ -466,69 +466,39 @@ function showPreview(data) {
     const rows = tbody.querySelectorAll("tr");
 
     // Check if student already exists
-    for (let row of rows) {
-    
-    row.querySelector(".num-col").innerText = parsed.pcnumber;
+for (let row of rows) {
 
-        const cells = row.querySelectorAll("td:not(.num-col)");
+    const cells = row.querySelectorAll("td:not(.num-col)");
 
-        if (
-            cells[0].innerText.trim().toLowerCase() ===
-            parsed.name.toLowerCase()
-        ) {
+    if (cells[0].innerText.trim() === "") {
 
-            cells[4].innerText = parsed.postTest;
-            cells[5].innerText = parsed.feedback;
+        row.querySelector(".num-col").innerText = parsed.pcnumber;
 
-            saveAttendance();
+        cells[0].innerText = parsed.name;
+        cells[1].innerText = parsed.grade;
+        cells[2].innerText = parsed.school;
+        cells[3].innerText = parsed.preTest;
+        cells[4].innerText = parsed.postTest;
+        cells[5].innerText = parsed.feedback;
 
-            Swal.fire(
-                "Updated",
-                `${parsed.name}'s Post-Test and Feedback updated.`,
-                "success"
-            );
+        const now = new Date();
 
-            return;
-        }
+        cells[6].innerText = now.toLocaleDateString();
+        cells[7].innerText = now.toLocaleTimeString();
+
+        saveAttendance();
+
+        Swal.fire(
+            "Success",
+            `${parsed.name} inserted successfully.`,
+            "success"
+        );
+
+        return;
     }
-
-    // Insert new student
-    for (let row of rows) {
-
-        const cells = row.querySelectorAll("td:not(.num-col)");
-
-        if (cells[0].innerText.trim() === "") {
-
-            cells[0].innerText = parsed.name;
-            cells[1].innerText = parsed.grade;
-            cells[2].innerText = parsed.school;
-            cells[3].innerText = parsed.preTest;
-            cells[4].innerText = parsed.postTest;
-            cells[5].innerText = parsed.feedback;
-
-            const now = new Date();
-
-            cells[6].innerText = now.toLocaleDateString();
-            cells[7].innerText = now.toLocaleTimeString();
-
-            saveAttendance();
-
-            Swal.fire(
-                "Success",
-                `${parsed.name} inserted successfully.`,
-                "success"
-            );
-
-            return;
-        }
-    }
-
-    Swal.fire(
-        "Table Full",
-        "No empty row available.",
-        "warning"
-    );
 }
+  }
+
 </script>
 
 </body>
