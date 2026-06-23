@@ -139,8 +139,6 @@
         rows.forEach((row, index) => {
             if (data[index]) {
                 const cells = row.querySelectorAll('td:not(.num-col)');
-                row.querySelector(".num-col").innerText =
-                data[index].pcnumber || "";
                 cells[0].innerText = data[index].name || '';
                 cells[1].innerText = data[index].grade || '';
                 cells[2].innerText = data[index].school || '';
@@ -243,7 +241,7 @@
     for (let i = 1; i <= 30; i++) {
         let row = document.createElement('tr');
         row.innerHTML = `
-            <td class="num-col"></td>
+            <td class="num-col">${i}</td>
             <td contenteditable="true" onblur="lockCell(this)"></td>
             <td contenteditable="true" onblur="lockCell(this)"></td>
             <td contenteditable="true" onblur="lockCell(this)"></td>
@@ -466,73 +464,49 @@ function showPreview(data) {
 
   function insertParsed(parsed) {
 
+    const pc = parseInt(parsed.pcnumber);
+
+    // Check if PC Number is valid
+    if (isNaN(pc) || pc < 1 || pc > 30) {
+        Swal.fire(
+            "Invalid PC Number",
+            "PC Number must be between 1 and 30.",
+            "warning"
+        );
+        return;
+    }
+
     const rows = tbody.querySelectorAll("tr");
 
-    // Check if student already exists
-    for (let row of rows) {
+    // Row 1 = PC 1, Row 2 = PC 2...
+    const row = rows[pc - 1];
 
-        const cells = row.querySelectorAll("td:not(.num-col)");
+    const cells = row.querySelectorAll("td:not(.num-col)");
 
-        if (
-            cells[0].innerText.trim().toLowerCase() ===
-            parsed.name.toLowerCase()
-        ) {
+    // Display the PC Number
+    row.querySelector(".num-col").innerText = parsed.pcnumber;
 
-            cells[4].innerText = parsed.postTest;
-            cells[5].innerText = parsed.feedback;
+    // Only overwrite fields that have values
+    if (parsed.name) cells[0].innerText = parsed.name;
+    if (parsed.grade) cells[1].innerText = parsed.grade;
+    if (parsed.school) cells[2].innerText = parsed.school;
+    if (parsed.preTest) cells[3].innerText = parsed.preTest;
+    if (parsed.postTest) cells[4].innerText = parsed.postTest;
+    if (parsed.feedback) cells[5].innerText = parsed.feedback;
 
-            saveAttendance();
+    const now = new Date();
 
-            Swal.fire(
-                "Updated",
-                `${parsed.name}'s record has been updated.`,
-                "success"
-            );
+    cells[6].innerText = now.toLocaleDateString();
+    cells[7].innerText = now.toLocaleTimeString();
 
-            return;
-        }
-    }
-
-    // Insert new student
-    for (let row of rows) {
-
-        const cells = row.querySelectorAll("td:not(.num-col)");
-
-        if (cells[0].innerText.trim() === "") {
-
-            row.querySelector(".num-col").innerText = parsed.pcnumber;
-
-            cells[0].innerText = parsed.name;
-            cells[1].innerText = parsed.grade;
-            cells[2].innerText = parsed.school;
-            cells[3].innerText = parsed.preTest;
-            cells[4].innerText = parsed.postTest;
-            cells[5].innerText = parsed.feedback;
-
-            const now = new Date();
-
-            cells[6].innerText = now.toLocaleDateString();
-            cells[7].innerText = now.toLocaleTimeString();
-
-            saveAttendance();
-
-            Swal.fire(
-                "Success",
-                `${parsed.name} inserted successfully.`,
-                "success"
-            );
-
-            return;
-        }
-    }
+    saveAttendance();
 
     Swal.fire(
-        "Table Full",
-        "No empty row available.",
-        "warning"
+        "Success",
+        `PC ${parsed.pcnumber} updated successfully.`,
+        "success"
     );
 }
-
 </script>
 
 </body>
