@@ -39,6 +39,11 @@
         <div class="mb-2">Summer ICT</div>
     </header>
 
+    <div class="mb-3">
+        <label for="school-name" class="form-label">School Name:</label>
+        <input type="text" id="school-name" class="form-control" placeholder="Enter school name">
+    </div>
+
     <div class="controls">
         <button class="btn btn-outline-secondary me-2" onclick="unlockCells()">🔓 Unlock for Editing</button>
         <button class="btn btn-outline-info me-2" onclick="alert('Button Works'); startQRInput();">
@@ -59,8 +64,7 @@
                     <th>Pre Test</th>
                     <th>Post Test</th>
                     <th>Feedback</th>
-                    <th>Date</th>
-                    <th>Time</th>
+                    
                 </tr>
             </thead>
             <tbody id="attendance-body">
@@ -125,10 +129,8 @@
             const preTest = cells[3].innerText.trim();
             const postTest = cells[4].innerText.trim();
             const feedback = cells[5].innerText.trim();
-            const date = cells[6].innerText.trim();
-            const time = cells[7].innerText.trim();
             const pcnumber = row.querySelector(".num-col").innerText.trim();
-            data.push({pcnumber, name, grade, school, preTest, postTest, feedback, date, time});
+            data.push({pcnumber, name, grade, school, preTest, postTest, feedback});
         });
         localStorage.setItem('attendanceData', JSON.stringify(data));
     }
@@ -145,8 +147,6 @@
                 cells[3].innerText = data[index].preTest || '';
                 cells[4].innerText = data[index].postTest || '';
                 cells[5].innerText = data[index].feedback || '';
-                cells[6].innerText = data[index].date || '';
-                cells[7].innerText = data[index].time || '';
                 // Lock populated cells
                 cells.forEach(cell => {
                     if (cell.innerText.trim() !== "") {
@@ -182,7 +182,8 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'attendance.csv';
+                const schoolName = document.getElementById('school-name').value.trim() || 'attendance';
+                a.download = schoolName + '.csv';
                 a.click();
                 URL.revokeObjectURL(url);
                 // Clear storage after download
@@ -196,7 +197,7 @@
     }
 
     function generateCSV() {
-        let csv = 'Name,Grade,School,Pre Test,Post Test,Feedback,Date,Time\n';
+        let csv = 'Name,Grade,School,Pre Test,Post Test,Feedback\n';
         const rows = tbody.querySelectorAll('tr');
         rows.forEach(row => {
             const cells = row.querySelectorAll('td:not(.num-col)');
@@ -206,9 +207,7 @@
             const preTest = cells[3].innerText.trim();
             const postTest = cells[4].innerText.trim();
             const feedback = cells[5].innerText.trim();
-            const date = cells[6].innerText.trim();
-            const time = cells[7].innerText.trim();
-            csv += `"${name}","${grade}","${school}","${preTest}","${postTest}","${feedback}","${date}","${time}"\n`;
+            csv += `"${name}","${grade}","${school}","${preTest}","${postTest}","${feedback}"\n`;
         });
         const teacher = document.getElementById('teacher-name').innerText.trim();
         csv += `\nTeacher: ${teacher}\n`;
@@ -217,18 +216,19 @@
 
     function downloadExcel() {
         const data = [];
-        data.push(['Name', 'Grade', 'School', 'Pre Test', 'Post Test', 'Feedback', 'Date', 'Time']);
+        data.push(['Name', 'Grade', 'School', 'Pre Test', 'Post Test', 'Feedback']);
         const rows = tbody.querySelectorAll('tr');
         rows.forEach(row => {
             const cells = row.querySelectorAll('td:not(.num-col)');
-            data.push([cells[0].innerText.trim(), cells[1].innerText.trim(), cells[2].innerText.trim(), cells[3].innerText.trim(), cells[4].innerText.trim(), cells[5].innerText.trim(), cells[6].innerText.trim(), cells[7].innerText.trim()]);
+            data.push([cells[0].innerText.trim(), cells[1].innerText.trim(), cells[2].innerText.trim(), cells[3].innerText.trim(), cells[4].innerText.trim(), cells[5].innerText.trim()]);
         });
         data.push([]);
         data.push(['Teacher', document.getElementById('teacher-name').innerText.trim()]);
         const ws = XLSX.utils.aoa_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
-        XLSX.writeFile(wb, 'attendance.xlsx');
+        const schoolName = document.getElementById('school-name').value.trim() || 'attendance';
+        XLSX.writeFile(wb, schoolName + '.xlsx');
         // Clear storage after download
         localStorage.removeItem('attendanceData');
         localStorage.removeItem('teacherName');
@@ -248,8 +248,6 @@
             <td contenteditable="true" onblur="lockCell(this)"></td>
             <td contenteditable="true" onblur="lockCell(this)"></td>
             <td contenteditable="true" onblur="lockCell(this)"></td>
-            <td></td>
-            <td></td>
         `;
         tbody.appendChild(row);
     }
@@ -263,13 +261,6 @@
         const row = cell.parentElement;
         const cells = row.querySelectorAll('td:not(.num-col)');
         const nameCell = cells[0];
-        const dateCell = cells[6];
-        const timeCell = cells[7];
-        if (cell === nameCell && cell.innerText.trim() !== "" && dateCell.innerText === "") {
-            const now = new Date();
-            dateCell.innerText = now.toLocaleDateString();
-            timeCell.innerText = now.toLocaleTimeString();
-        }
         if (cell.innerText.trim() !== "") {
             cell.contentEditable = "false";
         }
