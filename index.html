@@ -237,8 +237,8 @@
         location.reload();
     }
 
-    // Generate 30 rows
-    for (let i = 1; i <= 30; i++) {
+    // Generate 40 rows
+    for (let i = 1; i <= 40; i++) {
         let row = document.createElement('tr');
         row.innerHTML = `
             <td class="num-col">${i}</td>
@@ -467,10 +467,10 @@ function showPreview(data) {
     const pc = parseInt(parsed.pcnumber);
 
     // Check if PC Number is valid
-    if (isNaN(pc) || pc < 1 || pc > 30) {
+    if (isNaN(pc) || pc < 1 || pc > 40) {
         Swal.fire(
             "Invalid PC Number",
-            "PC Number must be between 1 and 30.",
+            "PC Number must be between 1 and 40.",
             "warning"
         );
         return;
